@@ -1,0 +1,78 @@
+(ns sample.dashboard
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:dashboard/dashboard.dart" :as d]
+   [cljd.flutter :as f]))
+
+(def dashboard
+  (f/widget
+
+    :get {controller :controller}
+
+    (d/Dashboard
+      .dashboardItemController controller
+      .itemStyle (d/ItemStyle .color m/Colors.red)
+      .itemBuilder (fn [item]
+                     (m/Text (.-identifier item))))))
+
+(defn toggle
+  [controller]
+  (when controller
+    (try
+      (set! (.-isEditing controller)
+            (not (.-isEditing controller)))
+      (catch dynamic _ nil))))
+
+
+(def button
+  (f/widget
+
+    :get {controller :controller}
+
+    :watch [;; Does not react to isEditing property changes
+            editing? (f/sub controller (fn [_] (.-isEditing controller)))
+
+            ;; Also does not work
+            ;; {editing? .-isEditing} controller
+
+            _ (println "editing? " editing?)]
+
+    (if editing?
+
+      (m/IconButton
+        .icon (m/Icon m/Icons.save)
+        .onPressed #(toggle controller))
+
+      (m/IconButton
+        .icon (m/Icon m/Icons.edit)
+        .onPressed #(toggle controller)))))
+
+(def scaffold
+  (f/widget
+
+    :let [controller (d/DashboardItemController
+                       .items [(d/DashboardItem
+                                 .width 2
+                                 .height 3
+                                 .identifier "id_1")])]
+
+    :bind {:controller controller}
+
+    (m/Scaffold
+      .appBar (m/AppBar
+                .title (m/Text "Welcome to ClojureDart")
+                .actions [button]))
+    .body
+    m/Center
+    dashboard))
+
+
+(defn main []
+  (f/run
+
+    (m/MaterialApp
+      .title "Welcome to Flutter"
+      .debugShowCheckedModeBanner false
+      .theme (m/ThemeData .primarySwatch m.Colors/blue))
+    .home
+    scaffold))
