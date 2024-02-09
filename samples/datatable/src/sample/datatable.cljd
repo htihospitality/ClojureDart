@@ -16,7 +16,12 @@
     .showBottomBorder true
     .columns (for [col cols] (m/DataColumn .label (m/Text col)))
     .rows (for [row rows]
-            (m/DataRow .cells (for [cell row] (m/DataCell (m/Text cell))))))))
+            (f/widget
+
+              ;; Uncomment this to reproduce the error
+              ;; :watch [something (atom {})]
+
+              (m/DataRow .cells (for [cell row] (m/DataCell (m/Text cell)))))))))
 
 (def demo
   (f/widget
